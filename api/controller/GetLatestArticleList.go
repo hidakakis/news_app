@@ -1,11 +1,11 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
+	"net/http"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/labstack/echo"
 	"github.com/mmcdole/gofeed"
 )
 
@@ -17,6 +17,13 @@ func imageFromFeed(feed string) string {
 }
 
 func main() {
+	e := echo.New()
+	e.GET("/", feedFactory)
+	e.Logger.Fatal(e.Start(":8770"))
+}
+
+// feedFactory: factory of feed json
+func feedFactory(c echo.Context) error {
 	fp := gofeed.NewParser()
 	rssUrls := []string{
 		"http://www.vsnp.net/index.rdf",
@@ -31,6 +38,5 @@ func main() {
 			feedArray = append(feedArray, feedmap)
 		}
 	}
-	feedJSONIndent, _ := json.MarshalIndent(feedArray, "", "   ")
-	fmt.Println(string(feedJSONIndent))
+	return c.JSON(http.StatusOK, feedArray)
 }
