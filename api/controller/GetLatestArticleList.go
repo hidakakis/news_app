@@ -34,7 +34,12 @@ func feedFactory(c echo.Context) error {
 		feed, _ := fp.ParseURL(rssURL)
 		items := feed.Items
 		for _, item := range items {
-			feedmap := map[string]interface{}{"title": item.Title, "url": item.Link, "image": imageFromFeed(item.Content), "publishedAt": "tbd"}
+			feedmap := map[string]interface{}{
+				"title":       item.Title,
+				"url":         item.Link,
+				"image":       imageFromFeed(item.Content),
+				"publishedAt": "tbd",
+			}
 			feedArray = append(feedArray, feedmap)
 		}
 	}
