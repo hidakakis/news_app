@@ -22,16 +22,17 @@ func main() {
 	e.Logger.Fatal(e.Start(":8770"))
 }
 
-// feedFactory: factory of feed json
+// feedFactory is factory of feed json
 func feedFactory(c echo.Context) error {
-	fp := gofeed.NewParser()
+	feedparser := gofeed.NewParser()
 	rssUrls := []string{
 		"http://www.vsnp.net/index.rdf",
-		"http://blog.livedoor.jp/dqnplus/index.rdf"}
+		"http://blog.livedoor.jp/dqnplus/index.rdf",
+	}
 	var feedArray []map[string]interface{}
 
 	for _, rssURL := range rssUrls {
-		feed, _ := fp.ParseURL(rssURL)
+		feed, _ := feedparser.ParseURL(rssURL)
 		items := feed.Items
 		for _, item := range items {
 			feedmap := map[string]interface{}{
