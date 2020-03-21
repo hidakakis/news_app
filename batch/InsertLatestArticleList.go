@@ -22,6 +22,7 @@ type SiteRecord struct {
 	URL         string
 	image       string
 	publishedAt string
+	updateDate  string
 }
 
 // Db is PostgreSQL Instance
@@ -44,6 +45,10 @@ func initDB() {
 
 func insertLatestArticleToDB(Article string) {
 
+}
+
+func updateLatestDate(siteID int, updateDate string) {
+	// pass
 }
 
 func getSiteInfoList() []SiteInfo {
@@ -84,7 +89,9 @@ func main() {
 	siteinfolist := getSiteInfoList()
 	feedparser := gofeed.NewParser()
 	feedArray := []SiteRecord{}
+	var isVisit map[int]bool
 	for _, siteinfo := range siteinfolist {
+		isVisit[siteinfo.ID] = false
 		feed, _ := feedparser.ParseURL(siteinfo.rssURL)
 		items := feed.Items
 		for _, item := range items {
@@ -93,8 +100,15 @@ func main() {
 				URL:         item.Link,
 				image:       imageFromFeed(item.Content),
 				publishedAt: "tbd",
+				updateDate:  item.Updated,
 			}
-			feedArray = append(feedArray, feedmap)
+			if feedmap.updateDate > siteinfo.latestDate {
+				feedArray = append(feedArray, feedmap)
+				if !isVisit[siteinfo.ID] {
+					updateLatestDate(siteinfo.ID, feedmap.updateDate)
+					isVisit[siteinfo.ID] = true
+				}
+			}
 		}
 	}
 }
