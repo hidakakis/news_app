@@ -2,6 +2,10 @@ package main
 
 import (
 	"database/sql"
+	"strings"
+
+	"github.com/PuerkitoBio/goquery"
+	"github.com/mmcdole/gofeed"
 )
 
 // SiteInfo is metainfomation of RSS Site
@@ -12,8 +16,23 @@ type SiteInfo struct {
 	latestDate string
 }
 
+// SiteRecord is site infomation on DB
+type SiteRecord struct {
+	title       string
+	URL         string
+	image       string
+	publishedAt string
+}
+
 // Db is PostgreSQL Instance
 var Db *sql.DB
+
+func imageFromFeed(feed string) string {
+	reader := strings.NewReader(feed)
+	doc, _ := goquery.NewDocumentFromReader(reader)
+	ImageURL, _ := doc.Find("img").Attr("src")
+	return ImageURL
+}
 
 func initDB() {
 	var err error
@@ -27,7 +46,7 @@ func insertLatestArticleToDB(Article string) {
 
 }
 
-func getSiteInfoList(updateDate string) []SiteInfo {
+func getSiteInfoList() []SiteInfo {
 	siteinfo := SiteInfo{}
 	siteinfolist := []SiteInfo{}
 	sql01_01 := "SELECT /* sql01_01 */ ID, title, rssURL, latestDate FROM site_tbl"
@@ -62,4 +81,20 @@ func getUpdateDate() {
 }
 
 func main() {
+	siteinfolist := getSiteInfoList()
+	feedparser := gofeed.NewParser()
+	feedArray := []SiteRecord{}
+	for _, siteinfo := range siteinfolist {
+		feed, _ := feedparser.ParseURL(siteinfo.rssURL)
+		items := feed.Items
+		for _, item := range items {
+			feedmap := SiteRecord{
+				title:       item.Title,
+				URL:         item.Link,
+				image:       imageFromFeed(item.Content),
+				publishedAt: "tbd",
+			}
+			feedArray = append(feedArray, feedmap)
+		}
+	}
 }
