@@ -87,7 +87,11 @@ func registerLatestArticleToES(articleList []EsRecord) {
 }
 
 func updateLatestDate(siteID int, updateDate string) {
-	// TBD
+	sql01_03 := "UPDATE /* sql01_03 */ site_tbl SET latest_date = $1 WHERE id = $2"
+	_, err := Db.Exec(sql01_03, updateDate, siteID)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func getSiteInfoList() []SiteInfo {
